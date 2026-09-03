@@ -3,7 +3,7 @@
 > 本文件是 **DSH 本地导出**（`pptd_to_pptx.py` / `pptd_to_png.py` / `check_fonts.py`）的字体基准。
 > `fonts.md` 里的规范字体名是「设计意图/浏览器导出」用的；**本机实装名才是本地导出能真正命中的**。
 > 规则：**规范名 ≠ 实装名时，一律以实装名为准**，生成 `.pptd` 时把 `fontFamily` 写成下表的「实际安装名」，或让导出器按下表映射。
-> 若字体未装（见"未安装"节），按"字体不足"流程处理。
+> 若字体未装，按 `SKILL.md` 的「Font availability check」流程处理（本文件只给映射与用途，处理动作不在此重复）。
 
 ## 规范名 → 实际安装名 映射
 
@@ -49,19 +49,10 @@
 
 ## 检查命令（脚本 `scripts/check_fonts.py`）
 
-按「规范名 → 实装名」映射翻译后，对照本机已装字体（读注册表），输出 `已装 / 缺失 / 本地可用替代`：
+按「规范名 → 实装名」映射翻译后，对照本机已装字体（读注册表），输出 `已装 / 缺失 / 本地可用替代`。**检查动作与「缺失→改字体」的处理步骤见 `SKILL.md` 的「Font availability check」，此处不重复。**
 
 ```bash
 python scripts/check_fonts.py <deck.pptd>                  # 从 .pptd 的 theme.textStyles + 页面内联 fontFamily 收集字体
 python scripts/check_fonts.py --fonts "MiSans" "Georgia"   # 直接给字体名检查
 python scripts/check_fonts.py <deck.pptd> --list-missing   # 只列出缺失（供用户安装）
 ```
-
-**字体不足（`缺失` 非空）处理模板**：明确告知「字体不足：`MissingList`」→ 询问是否列出缺失字体（供安装，给规范名 + 免费商用来源 + 下载地址）→ 同时给本机替代建议 → 用户确认后把 `.pptd` 缺失字体改写为已装/映射名再继续生成。
-
-## 字体不足 处理提示（给 Agent 的模板）
-当 `.pptd` 所需字体经 `check_fonts.py` 判定为「缺失」时：
-1. 明确告知：**"字体不足：`MissingList`"**（用实际安装名后的缺失列表）。
-2. **询问是否列出缺失字体**（供用户安装）：列出缺失字体的规范名 + 免费商用来源 + 下载地址（如 Google Fonts / 官方声明）。
-3. 给出**本地可用的替代**建议（如 `SortsMillGoudy`→`Georgia`；`MiSans`→`更纱黑体 SC`；`QuattrocentoSans`→`Century Gothic`），并询问是否改用替代。
-4. 用户确认后，把 `.pptd` 里缺失字体改写为已装字体，再继续生成。
