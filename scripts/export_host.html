@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Open Kimi PPT Local Export</title>
+    <style>
+      html,
+      body,
+      iframe {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        border: 0;
+      }
+
+      #status {
+        position: fixed;
+        z-index: 10;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: rgb(0 0 0 / 72%);
+        color: white;
+        font: 12px/1.5 system-ui, sans-serif;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="status">starting</div>
+    <iframe id="editor" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
+    <script type="module">
+      import {
+        i as connect,
+        r as WindowMessenger,
+      } from "https://statics.moonshot.cn/neo-design/assets/penpal-C4NjirZE.js";
+
+      const status = document.querySelector("#status");
+      const frame = document.querySelector("#editor");
+      const editorOrigin = "https://www.kimi.com";
+
+      const setStatus = (value) => {
+        status.textContent = value;
+        document.documentElement.dataset.deckStatus = value;
+      };
+
+      const normalizePath = (value) => {
+        if (typeof value !== "string") return "";
+        if (/^(?:data:image\/|https?:\/\/|blob:)/i.test(value)) return value;
+        let candidate = value.replace(/^file:\/\/+/, "").replaceAll("\\", "/");
+        try {
+          candidate = decodeURIComponent(candidate);
+        } catch {
+          // Preserve literal percent signs.
+        }
+        const parts = [];
+        for (const part of candidate.split("/")) {
+          if (!part || part === ".") continue;
+          if (part === "..") parts.pop();
+          else parts.push(part);
+        }
+        return parts.join("/");
+      };
+
+      const resolveImage = (requestedPath, imageMap) => {
+        if (/^(?:data:image\/|https?:\/\/|blob:)/i.test(requestedPath || "")) {
+          return requestedPath;
+        }
+        const normalized = normalizePath(requestedPath);
+        if (imageMap[normalized]) return imageMap[normalized];
+        const suffix = Object.keys(imageMap).find(
+          (path) => normalized.endsWith(`/${path}`) || path.endsWith(`/${normalized}`),
+        );
+        return suffix ? imageMap[suffix] : "";
+      };
+
+      try {
+        const payload = await fetch("./payload.json", { cache: "no-store" }).then((response) => {
+          if (!response.ok) throw new Error(`payload HTTP ${response.status}`);
+          return response.json();
+        });
+
+        const query = new URLSearchParams({
+          sdkMode: "ppt-editor",
+          pptPlatform: "open-kimi-ppt-local-export",
+          functional: JSON.stringify({
+            fullscreen: false,
+            present: false,
+            export: true,
+            close: false,
+            annotation: false,
+            feedback: false,
+            share: false,
+            versionHistory: false,
+          }),
+          sdkSaveMode: "external",
+          sdkImageMode: "external",
+        });
+
+        frame.addEventListener(
+          "load",
+          async () => {
+            setStatus("iframe-loaded");
+            try {
+              const messenger = new WindowMessenger({
+                remoteWindow: frame.contentWindow,
+                allowedOrigins: [editorOrigin],
+              });
+              const connection = connect({
+                messenger,
+                methods: {
+                  close() {},
+                  reenter() {},
+                  toggleFullScreen(value) {
+                    return value;
+                  },
+                  showFeedback() {},
+                  sendPrompt() {},
+                  showMessage() {},
+                  hideMessage() {},
+                  onSave(savePayload) {
+                    return {
+                      fileContent: savePayload?.fileContent,
+                      lastModifiedTime: Date.now(),
+                    };
+                  },
+                  getImages(imagePayload = {}) {
+                    const paths = Array.isArray(imagePayload.filePath) ? imagePayload.filePath : [];
+                    return paths.map((path) => resolveImage(path, payload.imageMap || {}));
+                  },
+                  setAnnotationMode() {},
+                  setAnnotationCurrentPage() {},
+                  upsertAnnotation() {},
+                  removeAnnotation() {},
+                  clearAnnotations() {},
+                },
+              });
+
+              const remote = await connection.promise;
+              window.exportRemote = remote;
+              await remote.setSlideConfig({
+                editable: true,
+                locale: "zh-CN",
+                theme: "light",
+                slideId: payload.id,
+              });
+              await remote.setPPTD(payload.id, {
+                pptdContent: payload.manifestContent,
+                pages: payload.pages,
+                pptdPath: payload.manifestPath,
+                basePath: "",
+                isCreate: true,
+              });
+              await remote.setEditable(true);
+              window.exportSlideStatus = await remote.getSlideStatus();
+              setStatus("ready");
+            } catch (error) {
+              window.exportHostError = String(error?.stack || error);
+              setStatus("error");
+            }
+          },
+          { once: true },
+        );
+
+        frame.src = `${editorOrigin}/neo-ppt/?${query}`;
+      } catch (error) {
+        window.exportHostError = String(error?.stack || error);
+        setStatus("error");
+      }
+    </script>
+  </body>
+</html>
