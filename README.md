@@ -6,7 +6,6 @@
 
 **DeepSeek Harness 插件 —— 内含 kimi-ppt 技能：创建 / 编辑 / 复刻 / 导出 PPT，DSH 内纯本地导出**
 
-[![Version](https://img.shields.io/github/v/release/OMSociety/kimi-ppt-skill?style=flat&color=blue)](https://github.com/OMSociety/kimi-ppt-skill)
 [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-any-8A2BE2?style=flat&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
 [![License](https://img.shields.io/github/license/OMSociety/kimi-ppt-skill?style=flat&color=green)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/OMSociety/kimi-ppt-skill?style=flat)](https://github.com/OMSociety/kimi-ppt-skill)
