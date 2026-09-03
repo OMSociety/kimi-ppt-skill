@@ -47,6 +47,18 @@
 | `SimHei` `SimSun` `FangSong` `KaiTi` | 系统标准中文 |
 | `更纱黑体 SC`（=Sarasa Gothic J/K） | MiSans 类似，备选中文黑体 |
 
+## 检查命令（脚本 `scripts/check_fonts.py`）
+
+按「规范名 → 实装名」映射翻译后，对照本机已装字体（读注册表），输出 `已装 / 缺失 / 本地可用替代`：
+
+```bash
+python scripts/check_fonts.py <deck.pptd>                  # 从 .pptd 的 theme.textStyles + 页面内联 fontFamily 收集字体
+python scripts/check_fonts.py --fonts "MiSans" "Georgia"   # 直接给字体名检查
+python scripts/check_fonts.py <deck.pptd> --list-missing   # 只列出缺失（供用户安装）
+```
+
+**字体不足（`缺失` 非空）处理模板**：明确告知「字体不足：`MissingList`」→ 询问是否列出缺失字体（供安装，给规范名 + 免费商用来源 + 下载地址）→ 同时给本机替代建议 → 用户确认后把 `.pptd` 缺失字体改写为已装/映射名再继续生成。
+
 ## 字体不足 处理提示（给 Agent 的模板）
 当 `.pptd` 所需字体经 `check_fonts.py` 判定为「缺失」时：
 1. 明确告知：**"字体不足：`MissingList`"**（用实际安装名后的缺失列表）。
