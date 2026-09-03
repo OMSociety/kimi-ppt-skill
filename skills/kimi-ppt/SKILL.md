@@ -215,9 +215,3 @@ When generating a PPT, adopt different production approaches for different user 
 12. Speaker notes (`notes` on each `.page`): use them only when the user explicitly requests them; otherwise, do not add them.
 13. Parallel tool calls: during PPT production, make tool calls in parallel whenever possible; in each round, write multiple page files in parallel to reduce the number of steps.
 
-## 维护 / 可沉淀（活技能）
-本技能是**活的**：新**验证过**的内容写回对应文件；写回前核对实况，不凭记忆补全，不堆进正文。
-- 新**验证过**的设计主题/配色/版式 → 在 `reference/design_system/<场景>/<主题名>/design.md` 新增（场景目录：academic/consulting/finance/promotion/work…）。
-- 新装的字体（免费商用）→ 更新 `reference/dsh-fonts.md`（加入 规范名→实装名 映射 + 免费商用标记 + 本地替代）。
-- 新踩的坑（导出失败、字体/tofu、坐标越界、渐变/表格问题等）→ 记入 `reference/kimi-ppt-brief.md`（现象→原因→解法，简明）。
-- **上游注意**：本技能源自第三方 `open-kimi-ppt-skill`。更新上游会覆盖 `SKILL.md` 与 `scripts/`；自沉淀内容放在 `reference/` 与 `scripts/` 内**追加**的文件里，更新时注意对照差异、保留本地增强。
