@@ -7,10 +7,11 @@ deliberately not exercised here — it is covered indirectly by the CLI smoke
 test in the skill's manual validation, not by unit tests.
 """
 import importlib.util
-import os
 import tempfile
 import unittest
+from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "check_fonts.py"
@@ -107,6 +108,34 @@ class CollectFontsTests(unittest.TestCase):
             deck = Path(name) / "empty.pptd"
             deck.write_text("version: v2\ntitle: t\nsize: [1, 1]\npages: []\n", encoding="utf-8")
             self.assertEqual(MODULE.collect_fonts(str(deck)), set())
+
+
+class MainArgvTests(unittest.TestCase):
+    def test_empty_invocation_errors(self):
+        # Neither a manifest nor --fonts was given: the script must fail loudly
+        # rather than silently report "all fonts available" for nothing.
+        with patch.object(MODULE.sys, "argv", ["check_fonts.py"]), \
+                self.assertRaises(SystemExit) as cm:
+            MODULE.main()
+        self.assertNotEqual(cm.exception.code, 0)
+
+    def test_manifest_argument_collects_fonts(self):
+        with tempfile.TemporaryDirectory() as name:
+            deck = Path(name) / "deck.pptd"
+            deck.write_text(
+                "version: v2\ntitle: t\nsize: [1, 1]\n"
+                "theme:\n  textStyles:\n    title:\n      fontFamily:\n        latin: MiSans\n"
+                "pages: []\n",
+                encoding="utf-8",
+            )
+            with patch.object(MODULE.sys, "argv", ["check_fonts.py", str(deck)]), \
+                    patch.object(MODULE, "installed_families", return_value={"misans"}), \
+                    patch.object(MODULE.sys, "stdout", StringIO()) as out:
+                MODULE.main()
+            captured = out.getvalue()
+            self.assertIn("MiSans", captured)
+            self.assertIn("[已装]", captured)
+
 
 
 if __name__ == "__main__":

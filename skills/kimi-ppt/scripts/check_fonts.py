@@ -155,6 +155,9 @@ def main():
         req |= collect_fonts(args.manifest)
     req = {f for f in req if f}
 
+    if not req:
+        ap.error("没有可检查的字体：请提供 <deck.pptd> 或用 --fonts \"MiSans\" \"Georgia\" 指定字体名")
+
     fams = installed_families()
     installed, missing = [], []
     for c in sorted(req):
