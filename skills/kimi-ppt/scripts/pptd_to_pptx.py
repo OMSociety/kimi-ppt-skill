@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-pptd_to_pptx.py — 本地 .pptd -> .pptx 转换器（DSH 友好版）
+pptd_to_pptx.py — 本地 .pptd -> .pptx 转换器（纯本地版）
 不依赖无头浏览器 / agent-browser / kimi.com，只用 python-pptx + 本地文件。
 
 用法:
@@ -21,7 +21,7 @@ from pptx.oxml.ns import qn
 
 PX = 12700          # 1px = 1pt = 12700 EMU（规范：1px == 1pt）
 
-# 规范名 -> 实装名（与 reference/dsh-fonts.md 一致；本地导出写实装名让 PowerPoint 命中本机字体）
+# 规范名 -> 实装名（与 reference/local-fonts.md 一致；本地导出写实装名让 PowerPoint 命中本机字体）
 CANON_TO_INSTALLED = {
     "MiSans": "MiSans", "Noto Sans SC": "Noto Sans SC", "思源宋体": "思源宋体 CN",
     "Source Han Serif": "思源宋体 CN", "阿里妈妈刀隶体": "阿里妈妈刀隶体",

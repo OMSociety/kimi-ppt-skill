@@ -63,7 +63,7 @@
 
 **预设主题**（`reference/design_system/`）：`academic` 学术 · `consulting` 咨询 · `finance` 金融 · `promotion` 促销 · `work` 工作。
 
-**字体**（`reference/dsh-fonts.md`，规范名→实装名映射 + 免费商用标记）：
+**字体**（`reference/local-fonts.md`，规范名→实装名映射 + 免费商用标记）：
 
 | 场景 | 推荐（中文 / 西文） | 说明 |
 |---|---|---|
@@ -76,7 +76,7 @@
 
 ## ❓ 常见问题
 
-- **字体变成底格（tofu）**：deck 用了未安装字体 → 改成本机字体或按映射替换；见 `reference/dsh-fonts.md`。
+- **字体变成底格（tofu）**：deck 用了未安装字体 → 改成本机字体或按映射替换；见 `reference/local-fonts.md`。
 - **浏览器导出失败**：`agent-browser` 建 socket 权限或连 `kimi.com` 超时 → 改用本地 `pptd_to_pptx.py` / `pptd_to_png.py`。
 - **本地导出没有字体嵌入/淡入淡出**：这两项仅在浏览器导出路径提供。
 

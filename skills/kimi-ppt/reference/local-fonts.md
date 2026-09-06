@@ -1,6 +1,6 @@
-# DSH 本地导出字体（以本机实装为准）
+# 本地导出字体（以本机实装为准）
 
-> 本文件是 **DSH 本地导出**（`pptd_to_pptx.py` / `pptd_to_png.py` / `check_fonts.py`）的字体基准。
+> 本文件是**本地导出**（`pptd_to_pptx.py` / `pptd_to_png.py` / `check_fonts.py`）的字体基准。
 > `fonts.md` 里的规范字体名是「设计意图/浏览器导出」用的；**本机实装名才是本地导出能真正命中的**。
 > 规则：**规范名 ≠ 实装名时，一律以实装名为准**，生成 `.pptd` 时把 `fontFamily` 写成下表的「实际安装名」，或让导出器按下表映射。
 > 若字体未装，按 `SKILL.md` 的「Font availability check」流程处理（本文件只给映射与用途，处理动作不在此重复）。

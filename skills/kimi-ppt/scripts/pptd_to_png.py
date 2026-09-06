@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 pptd_to_png.py — 纯本地 .pptd -> 页面预览图 渲染器（Pillow，无浏览器/无 LibreOffice/无外网）
-用于 DSH 内的视觉 QA：按 .pptd 每页几何/配色/文字/字体画成一页 PNG，并合成一张 overview.jpg。
+用于受限环境内的视觉 QA：按 .pptd 每页几何/配色/文字/字体画成一页 PNG，并合成一张 overview.jpg。
 
 用法:
   python pptd_to_png.py <deck.pptd> [-o <outdir>] [--scale 2]
@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 FONTDIR = r"C:\Windows\Fonts"
 
-# 规范名 -> 实装名（与 reference/dsh-fonts.md 一致；本地导出按实装名找文件）
+# 规范名 -> 实装名（与 reference/local-fonts.md 一致；本地导出按实装名找文件）
 CANON_TO_INSTALLED = {
     "MiSans": "MiSans", "Noto Sans SC": "Noto Sans SC", "思源宋体": "思源宋体 CN",
     "Source Han Serif": "思源宋体 CN", "阿里妈妈刀隶体": "阿里妈妈刀隶体",

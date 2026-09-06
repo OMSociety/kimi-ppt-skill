@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-check_fonts.py — 字体可用性检查（DSH 本地导出用）
+check_fonts.py — 字体可用性检查（本地导出用）
 
 读 .pptd 声明的字体（或直接给字体名），按「规范名→实装名」映射翻译，
 对照本机已装字体（注册表），输出：
@@ -15,7 +15,7 @@ check_fonts.py — 字体可用性检查（DSH 本地导出用）
 import os, sys, re, argparse, json
 import yaml
 
-# 规范名 -> 实装名（与 reference/dsh-fonts.md 保持一致）
+# 规范名 -> 实装名（与 reference/local-fonts.md 保持一致）
 CANON_TO_INSTALLED = {
     "MiSans": "MiSans",
     "Noto Sans SC": "Noto Sans SC",

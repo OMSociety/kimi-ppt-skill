@@ -1,6 +1,6 @@
 ---
 name: kimi-ppt
-description: 生成/编辑/复刻/导出 PPT 与演示文稿。默认产出「可编辑 PPTD 项目 + 本地生成的 .pptx」（DSH 内用 python-pptx 纯本地导出；字体嵌入/淡入淡出属浏览器导出，需在非 DSH 桌面环境）。内置学术/咨询/金融/促销/工作等设计系统与本机字体映射。当用户要求 PPT、PowerPoint、PPTX、幻灯片、演示文稿、答辩/汇报/讲义、信息图、海报，或要求套用设计风格、转换 .pptd/.pptx 时使用。
+description: 生成/编辑/复刻/导出 PPT 与演示文稿。默认产出「可编辑 PPTD 项目 + 本地生成的 .pptx」（用 python-pptx 纯本地导出；字体嵌入/淡入淡出属浏览器导出，需桌面环境）。内置学术/咨询/金融/促销/工作等设计系统与本机字体映射。当用户要求 PPT、PowerPoint、PPTX、幻灯片、演示文稿、答辩/汇报/讲义、信息图、海报，或要求套用设计风格、转换 .pptd/.pptx 时使用。
 whenToUse: 用户要创建/编辑/复刻/导出 PPT、演示文稿、幻灯片、答辩 PPT、课程讲义、信息图或海报；或拿到 .pptd/.pptx 要转换/美化；或要求按某设计主题做展示页。纯知识问答/文本任务不要用本技能。
 ---
 
@@ -55,8 +55,8 @@ Understand the user's requirements based on the context:
   - Page-by-page outline/script provided: match the number of pages in the outline/script
   - When a complete and relatively structured document is provided: ask the user how much document content one page should cover, and give an estimated total page count; when only a topic is provided: suggest a recommended page count and confirm with the user
 
-#### Font availability check (DSH local export)
-> 以**本机实装字体为准**。字体映射与免费商用状态见 `reference/dsh-fonts.md`；检查用 `scripts/check_fonts.py`。在应用某个含明确字体的设计/风格、或本地导出前执行。
+#### Font availability check (local export)
+> 以**本机实装字体为准**。字体映射与免费商用状态见 `reference/local-fonts.md`；检查用 `scripts/check_fonts.py`。在应用某个含明确字体的设计/风格、或本地导出前执行。
 1. 确定 deck 会用到的字体（`.pptd` 的 `theme.textStyles` + 页面内联 `fontFamily` + 所选设计系统的默认字体）。
 2. 运行 `python3 scripts/check_fonts.py <deck.pptd>`（或 `--fonts "MiSans" "Arial"`）。脚本会把**规范名翻译成实装名**并与注册表比对，输出 `已装 / 缺失 / 本地可用替代`。
 3. 若 `缺失` 非空（**字体不足**）：
@@ -64,7 +64,7 @@ Understand the user's requirements based on the context:
    - **询问是否列出缺失字体**（供用户安装）：给出缺失字体的规范名 + 免费商用来源 + 下载地址（Google Fonts / 官方声明）。
    - **同时给出本地替代**（如 `SortsMillGoudy`→`Georgia`、`MiSans`→`更纱黑体 SC`、`QuattrocentoSans`→`Century Gothic`），询问是否改用替代。
    - 用户确认后，把 `.pptd` 缺失字体改写为已装/映射名，再继续生成。
-4. 生成时一律写**实装名** `fontFamily`（或让转换器按 `reference/dsh-fonts.md` 的 规范→实装 映射自动转换），确保本地导出命中本机字体。本地导出默认中文 `MiSans`(已装)、回退 `Microsoft YaHei`；几何标题推荐 `Century Gothic`/`Bahnschrift`。
+4. 生成时一律写**实装名** `fontFamily`（或让转换器按 `reference/local-fonts.md` 的 规范→实装 映射自动转换），确保本地导出命中本机字体。本地导出默认中文 `MiSans`(已装)、回退 `Microsoft YaHei`；几何标题推荐 `Century Gothic`/`Bahnschrift`。
 
 #### Clarification and follow-up questions
 When any of the following situations arise, resolve them by asking the user (use the agent's ask/clarification tool when available)
@@ -137,11 +137,11 @@ When generating a PPT, adopt different production approaches for different user 
 ### step4. PPT validation
 1. Validate the generated pptd against the format definition in `reference/pptd.md` (required fields, types, bounds, theme tokens, resource paths, etc.) and repair issues over multiple rounds
 2. Visual review with exported page images — **required before PPTX export when the model supports image input (multimodal)**:
-   - **DSH 默认：本地预览** `python3 scripts/pptd_to_png.py <deck.pptd> -o <project>/.preview`（Pillow，无浏览器/无外网）→ 生成 `page_N.png` 与 `overview.jpg`，再用视觉核对（检查清单见下）。本地预览直接反映几何/配色/字体（字体按本机实装名解析，见 `reference/dsh-fonts.md`）。
-   - 非 DSH / 需要浏览器版页面时，再跑 `scripts/export_images.py`。它将 deck 载入 Kimi 公共编辑器→导出图片 ZIP→拼成 overview：
+   - **默认：本地预览** `python3 scripts/pptd_to_png.py <deck.pptd> -o <project>/.preview`（Pillow，无浏览器/无外网）→ 生成 `page_N.png` 与 `overview.jpg`，再用视觉核对（检查清单见下）。本地预览直接反映几何/配色/字体（字体按本机实装名解析，见 `reference/local-fonts.md`）。
+   - 需要浏览器版页面（官方渲染效果）时，再跑 `scripts/export_images.py`。它将 deck 载入 Kimi 公共编辑器→导出图片 ZIP→拼成 overview：
 
      ```bash
-     python3 ~/.dsh/skills/kimi-ppt/scripts/export_images.py \
+     python3 scripts/export_images.py \
        /abs/path/project/deck.pptd \
        --output /abs/path/project/.qa-images
      ```
@@ -179,7 +179,7 @@ When generating a PPT, adopt different production approaches for different user 
    - the `.pptd` manifest;
    - the `pages/` directory and `media/` directory when present;
    - the generated `.pptx` file.
-4. PPTX conversion: **DSH 默认用本地** `python3 scripts/pptd_to_pptx.py <deck.pptd> -o <project>/deck.pptx --force`（python-pptx，纯本地、无浏览器/无外网；生成可编辑 `.pptx`，但**无字体嵌入/淡入淡出**）。需要字体嵌入+淡入淡出时，再用 `scripts/export_pptx.py`（浏览器 + 连 kimi.com，须在非 DSH 沙箱的桌面环境）：
+4. PPTX conversion: **默认用本地** `python3 scripts/pptd_to_pptx.py <deck.pptd> -o <project>/deck.pptx --force`（python-pptx，纯本地、无浏览器/无外网；生成可编辑 `.pptx`，但**无字体嵌入/淡入淡出**）。需要字体嵌入+淡入淡出时，再用 `scripts/export_pptx.py`（浏览器 + 连 kimi.com，须在桌面环境）：
 5. Default PPTX options:
    - page transition: `fade` (淡入淡出), written to every slide after the official browser export;
    - font embedding: enabled whenever the official writer exposes/supports it;
@@ -187,7 +187,7 @@ When generating a PPT, adopt different production approaches for different user 
 6. Export command:
 
    ```bash
-   python3 ~/.dsh/skills/kimi-ppt/scripts/export_pptx.py \
+   python3 scripts/export_pptx.py \
      /abs/path/project/deck.pptd \
      --output /abs/path/project/deck.pptx
    ```
@@ -202,15 +202,15 @@ When generating a PPT, adopt different production approaches for different user 
    - local PNG/JPEG/GIF/SVG files inside the PPTD project are supplied to the iframe as data URLs;
    - do not claim PowerPoint/WPS/Keynote playback compatibility solely because ZIP validation succeeds.
 
-   > **[DSH：本地导出为主]** 在 DeepSeek Harness (DSH) 内，浏览器导出（`export_pptx.py`/`export_images.py`）依赖 `agent-browser`（需创建 IPC socket）并连 Kimi 公共编辑器（`www.kimi.com`/`statics.moonshot.cn`），常因 socket 权限（os error 5）或连接超时失败。因此 **DSH 内默认走本地脚本**（仅需 `python-pptx`，纯本地、无浏览器/无外网）：
+   > **[本地导出为主]** 浏览器导出（`export_pptx.py`/`export_images.py`）依赖 `agent-browser`（需创建 IPC socket）并连 Kimi 公共编辑器（`www.kimi.com`/`statics.moonshot.cn`），在受限沙箱内常因 socket 权限（os error 5）或连接超时失败。因此**默认走本地脚本**（仅需 `python-pptx`，纯本地、无浏览器/无外网）：
    >
    > - PPTX：`python3 scripts/pptd_to_pptx.py <deck.pptd> -o <project>/deck.pptx --force`
    > - 视觉 QA：`python3 scripts/pptd_to_png.py <deck.pptd> -o <project>/.preview` → 生成 `page_N.png` + `overview.jpg`
    >
-   > 本地版缺**字体嵌入**与**淡入淡出翻页**（这两点仅浏览器导出可用）；需要时在**非 DSH 桌面终端**跑 `export_pptx.py` / `export_images.py`。
+   > 本地版缺**字体嵌入**与**淡入淡出翻页**（这两点仅浏览器导出可用）；需要时在**桌面终端**跑 `export_pptx.py` / `export_images.py`。
 8. After export, verify that the output exists and report the generated path. Confirm that every slide has exactly one root-level fade transition in valid CT_Slide order (`cSld`, optional `clrMapOvr`, `transition`, optional `timing/extLst`) and that the PPTX ZIP passes integrity checks. A byte-string search for `<p:fade>` is insufficient because Office ignores transitions nested inside `cSld`. For higher-risk decks, additionally inspect font parts and representative rendered/opened pages as appropriate.
-9. When the user wants to open, edit, save, or export a PPTD project manually, start the local browser editor with `npx open-kimi-ppt-skill serve`. Ask the user to open `http://127.0.0.1:55173/` and authorize the complete PPTD project directory. Use a Chromium-based browser for writable access; folder-upload fallback is read-only. The local host only serves the editor shell, while the embedded public Kimi editor and remote assets still require network access. **DSH 内 `serve` 不可用（该 npm CLI 在本机装不上）**：手动查看/编辑请改用 `scripts/pptd_to_png.py` 预览、改 `.page`、再 `scripts/pptd_to_pptx.py` 重导出。
-10. After completing and delivering any presentation, always end the final response with a concise optional next step. **DSH 内**：提示可用 `scripts/pptd_to_png.py` 看 `.preview` 预览、`scripts/pptd_to_pptx.py` 重新导出、或直接改 `.page` 后重跑。**仅在非 DSH 桌面且 `npx open-kimi-ppt-skill serve` 可用时**，才提示用 `serve` 打开浏览器编辑器/导出 PPTX（此 npm CLI 在部分环境装不上）。提醒要**在**、而不是**替代**必须的项目/文件链接。
+9. When the user wants to open, edit, save, or export a PPTD project manually, start the local browser editor with `npx open-kimi-ppt-skill serve`. Ask the user to open `http://127.0.0.1:55173/` and authorize the complete PPTD project directory. Use a Chromium-based browser for writable access; folder-upload fallback is read-only. The local host only serves the editor shell, while the embedded public Kimi editor and remote assets still require network access. **受限环境内 `serve` 不可用（该 npm CLI 在本机装不上）**：手动查看/编辑请改用 `scripts/pptd_to_png.py` 预览、改 `.page`、再 `scripts/pptd_to_pptx.py` 重导出。
+10. After completing and delivering any presentation, always end the final response with a concise optional next step. **受限环境内**：提示可用 `scripts/pptd_to_png.py` 看 `.preview` 预览、`scripts/pptd_to_pptx.py` 重新导出、或直接改 `.page` 后重跑。**仅在桌面环境且 `npx open-kimi-ppt-skill serve` 可用时**，才提示用 `serve` 打开浏览器编辑器/导出 PPTX（此 npm CLI 在部分环境装不上）。提醒要**在**、而不是**替代**必须的项目/文件链接。
 11. Element animations (`page.animations` in PPTD — entrance / emphasis / exit / motion-path; see `reference/pptd.md` §6): use them only when the user explicitly requests animations, or when the deck is clearly intended for live presentation / slideshow playback and animation provides a clear benefit for staged disclosure, process demonstration, causal explanation, pacing, visual impact, or brand storytelling. By default, do not add element animations to reading-oriented, self-study, print, or primarily send-and-browse decks. Prefer 1–3 animation groups per page and simple effects such as fade, fly, and zoom. This is separate from the default PPTX slide-level fade page transition written by `export_pptx.py`.
 12. Speaker notes (`notes` on each `.page`): use them only when the user explicitly requests them; otherwise, do not add them.
 13. Parallel tool calls: during PPT production, make tool calls in parallel whenever possible; in each round, write multiple page files in parallel to reduce the number of steps.
