@@ -78,16 +78,20 @@ ALTERNATIVES = {
 
 REG_RE = r"^(\S[^\(]*?)\s*\("
 
-# 系统字体目录：Windows 固定；POSIX 走 fontconfig / Font Book 的常用路径
+# 系统字体目录：Windows 动态解析系统盘与用户目录；POSIX 走 fontconfig / Font Book 的常用路径
+_WIN_FONTS = os.path.join(os.environ.get("SystemRoot", os.environ.get("WINDIR", r"C:\Windows")), "Fonts")
 FONT_DIRS = [
-    r"C:\Windows\Fonts",
+    _WIN_FONTS,
+    os.path.expanduser(r"~\AppData\Local\Microsoft\Windows\Fonts") if sys.platform.startswith("win") else "",
     "/usr/share/fonts",
     "/usr/local/share/fonts",
     os.path.expanduser("~/.fonts"),
+    os.path.expanduser("~/.local/share/fonts"),
     "/Library/Fonts",
     "/System/Library/Fonts",
     os.path.expanduser("~/Library/Fonts"),
 ]
+FONT_DIRS = [d for d in FONT_DIRS if d]
 FONT_EXTS = (".ttf", ".ttc", ".otf", ".otc")
 
 

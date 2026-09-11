@@ -10,24 +10,24 @@
 ## 规范名 → 实际安装名 映射（基准机快照）
 
 ### 中文
-| 规范名（fonts.md/设计用） | 实际安装名（本机） | 免费商用 | 说明 |
+| 规范名（fonts.md/设计用） | 典型实装名 | 免费商用 | 说明 |
 |---|---|---|---|
-| MiSans | `MiSans` | ✅ 小米官方全球免费商用 | 默认中文首选；多字重已装 |
+| MiSans | `MiSans` | ✅ 小米官方全球免费商用 | 默认中文首选；多字重建议安装 |
 | Noto Sans SC | `Noto Sans SC` | ✅ | 别名：`思源黑体 CN`（同为 Source Han Sans） |
 | Source Han Serif / 思源宋体 | `思源宋体 CN` | ✅ | 别名：`Noto Serif SC` |
 | 阿里妈妈刀隶体 | `阿里妈妈刀隶体` | ✅ 阿里官方免费商用 | |
 | 阿里妈妈东方大楷 | `阿里妈妈东方大楷` | ✅ | |
-| 阿里妈妈数黑体 | `阿里妈妈数黑体` | ✅ | 本机仅 Bold 字重 |
-| 站酷文艺体 | `站酷文艺体` | ✅ ZCOOL | 亦已装 `站酷高端黑`、`站酷快乐体2016修订版` |
-| 得意黑 (Smiley Sans) | `得意黑 斜体` | ✅ | 本机仅斜体字形（符合其设计） |
-| 飞波正点体 | `飞波正点体` | ✅（用户确认免费商用） | |
+| 阿里妈妈数黑体 | `阿里妈妈数黑体` | ✅ | 常见为 Bold 字重 |
+| 站酷文艺体 | `站酷文艺体` | ✅ ZCOOL | 同类备选 `站酷高端黑`、`站酷快乐体2016修订版` |
+| 得意黑 (Smiley Sans) | `得意黑 斜体` | ✅ | 官方预设仅斜体字形（符合其设计） |
+| 飞波正点体 | `飞波正点体` | ✅（免费商用） | |
 | 霞鹜新致宋 | `霞鹜新致宋＋` | ✅ LXGW | 注：名字带「＋」 |
-| LXGW Bright | `霞鹜文楷` | ✅ LXGW | 霞鹜文楷家族已装 |
+| LXGW Bright | `霞鹜文楷` | ✅ LXGW | 霞鹜文楷家族 |
 | ZCOOL KuaiLe | `ZCOOL KuaiLe` | ✅ ZCOOL | |
-| 精品点阵体 | `精品点阵体9×9…`（1.93 R/B、方格/光晕/渐层/立体/圆形版、港版） | ✅（用户确认） | 用 `精品点阵体9×9 1.93 R` 作默认 |
+| 精品点阵体 | `精品点阵体9×9…`（1.93 R/B、方格/光晕/渐层/立体/圆形版、港版） | ✅ | 用 `精品点阵体9×9 1.93 R` 作默认 |
 
 ### 英文
-| 规范名 | 实际安装名 | 免费商用 | 说明 |
+| 规范名 | 典型实装名 | 免费商用 | 说明 |
 |---|---|---|---|
 | Liter | `Liter` | ✅ OFL | |
 | HedvigLettersSans | `Hedvig Letters Sans` | ✅ | 注意空格 |
@@ -37,9 +37,9 @@
 | Coda | `Coda` | ✅ OFL | |
 | Jersey15 | `Jersey 15` | ✅ OFL | |
 | Jersey20Charted | `Jersey 20 Charted` | ✅ OFL | |
-| SortsMillGoudy | `Sorts Mill Goudy`（注意空格） | ✅ OFL | 本机已装（SourcesMillGoudy-Regular/Italic.ttf） |
+| SortsMillGoudy | `Sorts Mill Goudy`（注意空格） | ✅ OFL | （SourcesMillGoudy-Regular/Italic.ttf） |
 
-### 本地补充（已装、Windows/免费）
+### 本地常见补充（系统预装 / 免费商用）
 | 字体 | 用途建议 |
 |---|---|
 | `Century Gothic` / `Bahnschrift` | **几何感**，适合 Bauhaus/设计标题（比 Arial 更对味） |

@@ -5,6 +5,14 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.0.3]
+
+### ⚙️ 变更
+
+- **字体路径动态解析与跨平台健壮性增强**：`scripts/check_fonts.py` 与 `scripts/pptd_to_png.py` 在 Windows 环境下优先读取 `%SystemRoot%\Fonts` 及当前用户字体目录（`~\AppData\Local\Microsoft\Windows\Fonts`），不再硬编码 `C:\Windows\Fonts`；POSIX 环境增加 `~/.local/share/fonts` 探测支持。
+- **脱敏与通用化表述优化**：`reference/local-fonts.md` 脱敏「本机」口吻，优化为面向各机型通用实装名称与典型免费商用字体推荐。
+- **冗余清理**：清理分发与备份中遗留的 `__pycache__` 编译缓存。
+
 ## [1.0.2]
 
 ### ✨ 新增
