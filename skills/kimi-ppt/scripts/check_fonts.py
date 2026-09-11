@@ -4,8 +4,11 @@
 check_fonts.py — 字体可用性检查（本地导出用）
 
 读 .pptd 声明的字体（或直接给字体名），按「规范名→实装名」映射翻译，
-对照本机已装字体（注册表），输出：
+对照本机已装字体，输出：
   已装 / 缺失 / 本地可用替代。
+
+跨平台：Windows 读字体注册表；Linux / macOS 扫系统字体目录
+（fontconfig / Font Book 常用路径）。两者都取不到时打印提示，并按「全部缺失」处理。
 
 用法:
   python check_fonts.py <deck.pptd>            # 从 .pptd 的 theme.textStyles 收集字体
@@ -75,27 +78,62 @@ ALTERNATIVES = {
 
 REG_RE = r"^(\S[^\(]*?)\s*\("
 
+# 系统字体目录：Windows 固定；POSIX 走 fontconfig / Font Book 的常用路径
+FONT_DIRS = [
+    r"C:\Windows\Fonts",
+    "/usr/share/fonts",
+    "/usr/local/share/fonts",
+    os.path.expanduser("~/.fonts"),
+    "/Library/Fonts",
+    "/System/Library/Fonts",
+    os.path.expanduser("~/Library/Fonts"),
+]
+FONT_EXTS = (".ttf", ".ttc", ".otf", ".otc")
+
+
+def _font_files():
+    """递归列出系统字体目录里的字体文件名（族名匹配只需文件名）。"""
+    names = []
+    for d in FONT_DIRS:
+        if not os.path.isdir(d):
+            continue
+        for _root, _dirs, files in os.walk(d, followlinks=True):
+            names.extend(f for f in files if f.lower().endswith(FONT_EXTS))
+    return names
+
+
 def installed_families():
-    """从注册表读本机已装字体族名集合（已归一化，去掉 (TrueType) 与后缀）。"""
+    """Windows：从注册表读已装字体族名集合（已归一化，去掉 (TrueType) 与后缀）。"""
     import winreg
     key = r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"
     fams = []
-    try:
-        k = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key)
-        i = 0
-        while True:
-            try:
-                name, _val, _t = winreg.EnumValue(k, i)
-            except OSError:
-                break
-            norm = re.sub(r"\s*\([^)]*\)\s*$", "", name).strip()
-            if norm:
-                fams.append(norm.lower())
-            i += 1
-        winreg.CloseKey(k)
-    except Exception as e:
-        print(f"[warn] 读取字体注册表失败: {e}", file=sys.stderr)
+    k = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key)
+    i = 0
+    while True:
+        try:
+            name, _val, _t = winreg.EnumValue(k, i)
+        except OSError:
+            break
+        norm = re.sub(r"\s*\([^)]*\)\s*$", "", name).strip()
+        if norm:
+            fams.append(norm.lower())
+        i += 1
+    winreg.CloseKey(k)
     return set(fams)
+
+
+def installed_families_posix():
+    """POSIX 兜底：按字体文件名猜族名（不依赖 fontconfig，够用即可）。"""
+    fams = set()
+    for fn in _font_files():
+        norm = os.path.splitext(fn)[0].strip().lower()
+        norm = re.sub(
+            r"[-_ ](regular|bold|italic|oblique|light|medium|black|heavy|thin|"
+            r"semibold|demibold|extrabold|extralight|book|roman|condensed|"
+            r"regularitalic|bolditalic)$", "", norm).strip()
+        if norm:
+            fams.add(norm)
+    return fams
 
 def normalize_req(name):
     # 归一化规范名，方便与注册表条目「包含/起始」匹配
@@ -158,7 +196,14 @@ def main():
     if not req:
         ap.error("没有可检查的字体：请提供 <deck.pptd> 或用 --fonts \"MiSans\" \"Georgia\" 指定字体名")
 
-    fams = installed_families()
+    try:
+        fams = installed_families()
+    except Exception as e:
+        print(f"[warn] 读取字体注册表失败（{e}）；改用系统字体目录扫描", file=sys.stderr)
+        fams = installed_families_posix()
+    if not fams:
+        print("[warn] 未能取到任何已装字体：下列字体将全部标记为缺失；"
+              "请在目标机上安装字体，或用 --fonts 逐个核对", file=sys.stderr)
     installed, missing = [], []
     for c in sorted(req):
         inst = CANON_TO_INSTALLED.get(c, c)

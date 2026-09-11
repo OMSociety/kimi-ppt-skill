@@ -43,6 +43,7 @@ deck/
 ### 二、前置检查（本地导出必需）
 
 - Python 侧：`python-pptx` + `Pillow` + `PyYAML`（缺失时脚本会自动补 PyYAML / Pillow）。
+- 字体目录：默认按 Windows 字体目录解析；Linux/macOS 自动改扫系统字体目录，找不到就回退系统兜底字体（预览图不因此报错）。
 - 桌面增强轨道另需：Node.js 18+、Chromium、可连 `www.kimi.com`。缺失就**直接退回本地轨道**，不硬等、不反复重试。
 
 ### 三、字体核对（防豆腐块）
@@ -53,7 +54,7 @@ python scripts/check_fonts.py <deck.pptd>
 
 - 规范名→实装名映射与免费商用状态见 `reference/local-fonts.md`。
 - 报缺失时：给出缺失清单 + 本地替代（如 `SortsMillGoudy`→`Georgia`、`MiSans`→`更纱黑体 SC`），确认后改写 `.pptd` 再生成。
-- `.pptd` 里一律写**本机实装名**，保证本地导出命中真实字体。
+- `.pptd` 里一律写**目标机的实装名**，保证本地导出命中真实字体；`local-fonts.md` 的映射表是某台基准机的快照，换机器以 `check_fonts.py` 的输出为准（Windows 读注册表，Linux/macOS 扫系统字体目录）。
 
 ### 四、生成
 

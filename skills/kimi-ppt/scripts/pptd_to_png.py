@@ -12,7 +12,19 @@ import os, sys, re, argparse, html
 import yaml
 from PIL import Image, ImageDraw, ImageFont
 
-FONTDIR = r"C:\Windows\Fonts"
+# 系统字体目录（Windows 固定；POSIX 走 fontconfig 常用路径，逐个探测）
+FONT_DIRS = [
+    r"C:\Windows\Fonts",
+    "/usr/share/fonts",
+    "/usr/local/share/fonts",
+    os.path.expanduser("~/.fonts"),
+    "/Library/Fonts",
+    "/System/Library/Fonts",
+    os.path.expanduser("~/Library/Fonts"),
+]
+FONT_EXTS = (".ttf", ".ttc", ".otf", ".otc")
+
+_SYSTEM_FONTS = None
 
 # 规范名 -> 实装名（与 reference/local-fonts.md 一致；本地导出按实装名找文件）
 CANON_TO_INSTALLED = {
@@ -35,56 +47,180 @@ CANON_TO_INSTALLED = {
     "Georgia": "Georgia", "Cambria": "Cambria", "Constantia": "Constantia",
 }
 
-_INSTALLED_CACHE = None
 
-def _installed_font_list():
-    """从注册表读本机字体：[(归一化显示名, 文件名)]，按族名起始匹配用。"""
-    global _INSTALLED_CACHE
-    if _INSTALLED_CACHE is not None:
-        return _INSTALLED_CACHE
+def _styles(path):
+    """文件名里的字重/字形：(weight, italic)。weight 越大越粗。"""
+    stem = os.path.splitext(os.path.basename(path))[0].lower()
+    tokens = set(re.split(r"[^a-z0-9]+", stem))
+    if tokens & {"thin", "hairline"}:
+        w = 100
+    elif tokens & {"extralight", "ultralight"}:
+        w = 200
+    elif tokens & {"light"}:
+        w = 300
+    elif tokens & {"medium"}:
+        w = 500
+    elif tokens & {"semibold", "demibold", "demi"}:
+        w = 600
+    elif tokens & {"extrabold", "ultrabold"}:
+        w = 800
+    elif tokens & {"black", "heavy"}:
+        w = 900
+    elif tokens & {"bold", "bd"}:
+        w = 700
+    else:
+        w = 400
+    italic = bool(tokens & {"italic", "oblique", "it"}) or bool(tokens & {"bi", "bdit"})
+    return w, italic
+
+
+def _scan_fonts():
+    """目录扫描兜底：[(family, path, weight, italic)]，族名由文件名推断。"""
     entries = []
-    try:
-        import winreg
-        k = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-                           r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts")
-        i = 0
-        while True:
-            try:
-                name, val, _t = winreg.EnumValue(k, i)
-            except OSError:
-                break
-            norm = re.sub(r"\s*\([^)]*\)\s*$", "", str(name)).strip().lower()
-            fn = os.path.basename(str(val))
-            if norm and fn and os.path.isfile(os.path.join(FONTDIR, fn)):
-                entries.append((norm, fn))
-            i += 1
-        winreg.CloseKey(k)
-    except Exception:
-        pass
-    _INSTALLED_CACHE = entries
+    for d in FONT_DIRS:
+        if not os.path.isdir(d):
+            continue
+        for root, _dirs, files in os.walk(d, followlinks=True):
+            for fn in files:
+                if fn.lower().endswith(FONT_EXTS):
+                    path = os.path.join(root, fn)
+                    entries.append((os.path.splitext(fn)[0].strip().lower(), path, *_styles(path)))
     return entries
 
+
+# 注册表族名里可辨认的字重/字形词；其余情况一律回退用文件名判断
+_WEIGHT_WORDS = {
+    "thin": 100, "hairline": 100, "extralight": 200, "ultralight": 200, "light": 300,
+    "book": 350, "regular": 400, "normal": 400, "medium": 500, "demibold": 600,
+    "semibold": 600, "demi": 600, "bold": 700, "extrabold": 800, "ultrabold": 800,
+    "black": 900, "heavy": 900,
+}
+# 「X Bold & X UI Bold」这类合并条目：族名只取 & 前那段
+_FAMILY_SPLIT = " & "
+# 尾部字重/字形词不属于族名
+_TAIL_STYLE = re.compile(
+    r"\s+(thin|hairline|extralight|ultralight|light|book|regular|normal|medium|"
+    r"demibold|semibold|demi|bold|extrabold|ultrabold|black|heavy|italic|oblique)$")
+
+
+def _style_from_name(raw):
+    """(family, weight, italic)：解析注册表条目名，识别不出字重返回 None 交给文件名兜底。"""
+    name = raw.strip().lower()
+    italic = bool(re.search(r"\b(italic|oblique)\b", name))
+    if _FAMILY_SPLIT in name:          # 「X Bold & X UI Bold」→ 只取 & 前那段
+        name = name.split(_FAMILY_SPLIT, 1)[0]
+    weight = None
+    fam = name
+    m = _TAIL_STYLE.search(name)       # 尾部字重/字形词不属于族名
+    if m:
+        fam = name[:m.start()].strip()
+        if m.group(1) in _WEIGHT_WORDS:
+            weight = _WEIGHT_WORDS[m.group(1)]
+        if m.group(1) in ("italic", "oblique"):
+            italic = italic or True
+    return fam.strip(), weight, italic
+
+
+def system_fonts():
+    """系统可用字体：[(family, path, weight, italic)]。
+
+    Windows 先读字体注册表拿真实族名与字重（"微软雅黑 Bold & Microsoft YaHei UI Bold"
+    → 族 `微软雅黑`、weight 700）；注册表读不到时退到目录扫描（族名由文件名推断）。
+    同族同时保留常规与粗体，供调用方按需挑选。
+    """
+    global _SYSTEM_FONTS
+    if _SYSTEM_FONTS is None:
+        entries = []
+        try:
+            import winreg
+            k = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                               r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts")
+            i = 0
+            while True:
+                try:
+                    name, val, _t = winreg.EnumValue(k, i)
+                except OSError:
+                    break
+                raw = re.sub(r"\s*\([^)]*\)\s*$", "", str(name)).strip().lower()
+                fn = os.path.basename(str(val))
+                path = next((os.path.join(d, fn) for d in FONT_DIRS
+                             if fn and os.path.isfile(os.path.join(d, fn))), None)
+                if raw and path:
+                    fam, weight, italic = _style_from_name(raw)
+                    file_weight, file_italic = _styles(fn)
+                    if weight is None:
+                        weight = file_weight
+                    italic = italic or file_italic
+                    entries.append((fam, path, weight, italic))
+                i += 1
+            winreg.CloseKey(k)
+        except Exception:
+            entries = []
+        if not entries:
+            entries = _scan_fonts()
+        _SYSTEM_FONTS = _dedupe_fonts(entries)
+    return _SYSTEM_FONTS
+
+
+def _dedupe_fonts(entries):
+    """同族同字重只留一条：ASCII 族名优先（避免 CJK/乱码变体抢位），文件名短者优先。"""
+    best = {}
+    for fam, path, weight, italic in entries:
+        key = (fam, italic, weight)
+        prev = best.get(key)
+        if prev is None or (len(os.path.basename(path)), fam.isascii()) < \
+                (len(os.path.basename(prev)), fam.isascii()):
+            best[key] = path
+    return sorted((fam, path, weight, italic) for (fam, italic, weight), path in best.items())
+
+
+def _family_rank(fam, prefs):
+    """族名偏好序（分组：匹配到的 pref 序号 → 是否 ASCII → 族名）；无匹配返回 (-1,) 表示不候选。"""
+    for i, pref in enumerate(prefs):
+        if pref in fam:
+            return i, 0 if fam.isascii() else 1, fam
+    return (-1,)
+
+
+def default_font_file(bold=False):
+    """兜底字体：优先常见 CJK 族（同族内按需挑粗/常规字形），再退到任意一个系统字体。
+
+    偏好表刻意只用 ASCII 名（`yahei`/`simsun`…）：中文 Windows 的注册表常常同时给出
+    ASCII 与本地化两套族名，ASCII 那套才能在跨区域机器上稳定命中。
+    """
+    entries = system_fonts()
+    if not entries:
+        return ""
+    prefs = ("yahei", "noto sans cjk", "noto sans sc", "source han", "simhei",
+             "simsun", "pingfang", "hiragino", "wenquanyi", "dejavu sans", "arial")
+    fams = {f for f, _p, _w, _i in entries}
+    ranked = sorted((r, f) for r, f in ((_family_rank(f, prefs), f) for f in fams)
+                    if r[0] >= 0)
+    fam = ranked[0][1] if ranked else sorted(fams)[0]
+    cands = [(p, w, i) for f, p, w, i in entries if f == fam]
+    plain = [c for c in cands if not c[2]] or cands     # 优先非斜体
+    target = 700 if bold else 400
+    plain.sort(key=lambda c: abs(c[1] - target))
+    return plain[0][0]
+
+
 def font_file_for(name, bold):
-    """按(规范名)解析本机字体文件；找不到回退微软雅黑。bold 优先 bold 字形。"""
+    """按(规范名)解析本机字体文件；找不到回退系统兜底字体。bold 优先 bold 字形。"""
     base_name = CANON_TO_INSTALLED.get((name or "").strip(), (name or "").strip())
     target = base_name.lower()
-    entries = _installed_font_list()
-    cands = [(norm, fn) for norm, fn in entries
-             if norm == target or norm.startswith(target + " ") or norm.startswith(target + "&")]
+    entries = system_fonts()
+    cands = [(fam, p, w, i) for fam, p, w, i in entries
+             if fam == target or fam.startswith(target + " ") or fam.startswith(target + "&")]
     if not cands:
-        cands = [(norm, fn) for norm, fn in entries if target in norm]
+        cands = [(fam, p, w, i) for fam, p, w, i in entries if target and target in fam]
     if not cands:
-        return os.path.join(FONTDIR, "msyhbd.ttc" if bold else "msyh.ttc")
-    def score(c):
-        norm = c[0]; s = 0
-        if bold and any(k in norm for k in ("bold", "heavy", "black", "semibold", "demi")): s += 2
-        if (not bold) and any(k in norm for k in ("regular", "light", "thin", "xlight")): s += 1
-        if norm == target: s += 1
-        if "italic" in norm: s -= 2
-        if "cond" in norm or "condensed" in norm: s -= 1
-        return s
-    cands.sort(key=score, reverse=True)
-    return os.path.join(FONTDIR, cands[0][1])
+        return default_font_file(bold)
+    # 斜体最次、族名完全相等优先、字重按需（bold 取 700，否则取 400）
+    want = 700 if bold else 400
+    cands.sort(key=lambda c: (c[3], c[0] != target, abs(c[2] - want)))
+    return cands[0][1]
+    return cands[0][1]
+
 
 def resolve_color(c, theme_colors, fallback="000000"):
     if c is None:
@@ -155,7 +291,7 @@ def draw_text(draw, el, theme, scale, w, h, colors):
         font = ImageFont.truetype(font_path, int(font_size))
     except Exception:
         try:
-            font = ImageFont.truetype(os.path.join(FONTDIR, "msyhbd.ttc" if bold else "msyh.ttc"), int(font_size))
+            font = ImageFont.truetype(default_font_file(bold), int(font_size))
         except Exception:
             font = ImageFont.load_default()
     line_h = int(font_size * lh)
