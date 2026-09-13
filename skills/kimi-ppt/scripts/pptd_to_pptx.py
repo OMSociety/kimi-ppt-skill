@@ -8,7 +8,7 @@ pptd_to_pptx.py — 本地 .pptd -> .pptx 转换器（纯本地版）
   python pptd_to_pptx.py <deck.pptd> [-o <out.pptx>]
     -o 缺省：输出到项目目录下同名 .pptx（不覆盖已有文件，除非 --force）
 
-支持的元素: text / shape(常见几何形) / line / image；icon/table/chart 会降级为占位或跳过并提示。
+支持的元素: text / shape(常见几何形) / line / image / table；icon 与 chart 静默跳过，image 只插本地存在的文件，未知 shapeName 退化为矩形。
 """
 import os, sys, re, argparse, html
 import yaml

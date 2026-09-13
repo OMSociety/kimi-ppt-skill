@@ -1,10 +1,8 @@
 # PPT category guide
 
-1. **Follow the general rules**: the general rules apply to all scenarios and all pages, and take effect together with the style guidance documents
-2. **Determine the scenario**: choose the matching scenario based on the user's input
-3. **Read the scenario document**: read the document for that scenario and design according to its expressive focus and approach
+How to use this guide: the general rules below apply to all scenarios and all pages, and take effect together with the style guidance documents; then determine the matching scenario from the user's input, read that scenario's document, and design according to its expressive focus and approach.
 
-## step1. General rules
+## 1. General rules
 
 ### Requirements
 1. **Every page has a clear reader task**: what this page should make the reader understand, believe, decide, or do — think this through before designing.
@@ -17,10 +15,12 @@
 
 ### Strictly forbidden
 - **Evidence boundaries**: do not fabricate data, citations, customer cases, experimental results, or sources; when material is missing, clearly mark it as a placeholder, an assumption, or to-be-supplied information.
-- **Classic AI patterns**: it is strictly forbidden to use cards to build hierarchy or alignment (rounded rectangles, rectangular cards, cards with a colored side strip): lines, whitespace, and font-size contrast are better solutions; it is strictly forbidden to use the AI color scheme where red, purple, yellow, and green are all gathered on one page;
+- **Classic AI patterns**: it is strictly forbidden to use cards to build hierarchy or alignment (rounded rectangles, rectangular cards, cards with a colored side strip): lines, whitespace, and font-size contrast are better solutions; it is strictly forbidden to use the AI color scheme where red, purple, yellow, and green are all gathered on one page.
 
-## step2. Scenario determination
+## 2. Scenario determination
+
 Based on the user's input, analyze the presentation's audience and reader tasks, determine the scenario it belongs to, and read the corresponding style document.
+
 > Choose one primary scenario. When truly necessary, you may add one auxiliary scenario, but the primary scenario must prevail.
 
 | Scenario type | Typical queries | Reader task | Style document |

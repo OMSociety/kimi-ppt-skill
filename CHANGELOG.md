@@ -5,6 +5,26 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.0] - 2026-09-14
+
+### 🐛 修复
+
+- `scripts/check_fonts.py`：规范名 → 实装名映射表补齐 `思源黑体 CN`；缺失字体没有对应替代建议时，报告不再输出 `替代 None`。
+- `reference/fonts.md`：`Stylized font` 列取值与字体类型对齐——`阿里妈妈刀隶体`、`阿里妈妈东方大楷`、`站酷文艺体`、`飞波正点体`、`得意黑`、`ZCOOL KuaiLe` 标记为风格化字体（原取值按「有无使用限制」填写，与列名语义相反）。
+- `scripts/pptd_to_pptx.py`：模块文档字符串与实现对齐——`table` 已支持，`icon` / `chart` 静默跳过，`image` 需本地文件，未知 `shapeName` 退化为矩形。
+
+### ⚙️ 变更
+
+- `SKILL.md` 补齐开箱所需事实：`.pptd` 必须声明 `version: v2`；两条轨道的依赖与边界（Node.js 18+ 含 npm、Chrome 或 Edge、`agent-browser ≥0.33.2` 由脚本经 npm 安装或升级、自动安装范围 `PyYAML` / `Pillow` / `websocket-client`、本地轨道的元素支持为真子集、输出已存在须 `--force`）。
+- 预览命令简化为 `python scripts/pptd_to_png.py <deck.pptd>`（缺省输出 `<工程目录>/.preview`），并说明预览不渲染 `table` / `icon` / `chart`；示例占位符统一为 `<工程目录>`。
+- 叙述通用化，去掉对特定机器与平台的假设；术语统一为「本地轨道 / 桌面增强轨道」，映射表口径统一为「以 `check_fonts.py` 在本机的输出为准」。
+- `reference/local-fonts.md`：`精品点阵体`、`LXGW Bright`、`ZCOOL KuaiLe` 独立为「中英混排（Mixed CJK–Latin）」分组，与 `fonts.md` 分组一致；删除与 `SKILL.md` 重复的规则声明，并标注映射表为常见实装名参考。
+- `reference/slides_categories.md`：用法说明由三条列表合并为一句，章节编号统一为 `1.` / `2.`。
+
+### 🗑️ 移除
+
+- `SKILL.md` 的本地编辑器入口 `npx open-kimi-ppt-skill serve`：上游 npm 包 `open-kimi-ppt-skill` 已于 2026-08-07 下架，该入口不可用；手动编辑统一为「改 `.page` → `pptd_to_png.py` 预览 → 重导出」。
+
 ## [1.0.3]
 
 ### ⚙️ 变更

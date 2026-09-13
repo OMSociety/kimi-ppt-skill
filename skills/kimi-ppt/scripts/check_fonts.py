@@ -24,6 +24,7 @@ CANON_TO_INSTALLED = {
     "Noto Sans SC": "Noto Sans SC",
     "思源宋体": "思源宋体 CN",
     "Source Han Serif": "思源宋体 CN",
+    "思源黑体 CN": "思源黑体 CN",
     "阿里妈妈刀隶体": "阿里妈妈刀隶体",
     "阿里妈妈东方大楷": "阿里妈妈东方大楷",
     "阿里妈妈数黑体": "阿里妈妈数黑体",
@@ -153,10 +154,9 @@ def present(fam_set, req_installed):
             return True
         if f.startswith(r + " ") or f.startswith(r + "\u3000"):
             return True
-        if r in f and len(r) >= 2:
-            # 对中文/特殊名更宽松：整词出现在条目开头
-            if f.startswith(r):
-                return True
+        if len(r) >= 2 and f.startswith(r):
+            # 中文/特殊实装名常在族名后直接跟字重或版本后缀，中间没有分隔符
+            return True
     return False
 
 def collect_fonts(manifest):
@@ -229,7 +229,10 @@ def main():
     if missing:
         for c in missing:
             sug = ALTERNATIVES.get(c)
-            print(f"  {c!r:28} 建议安装 或 用替代 {sug}")
+            if sug:
+                print(f"  {c!r:28} 建议安装，或用替代 {', '.join(sug)}")
+            else:
+                print(f"  {c!r:28} 建议安装")
     else:
         print("  (无)")
     print("\n[本地可用替代建议]")
